@@ -1,0 +1,56 @@
+{% extends 'base.html' %} 
+{% block content %}
+
+<h3>Profiles</h3>
+<hr>
+{% if is_empty %}
+    <h1>No profiles to connect</h1>
+{% endif %}
+
+<br>
+    {% for item in object_list %}
+        <div class="p-3 mb-4 bg-light rounded-3">
+            <div class="container-fluid py-5">
+                <div class="row">
+                    <div class="col-2">
+                        <img src="{{ item.avatar.url }}" class="rounded-circle shadow-1-strong" alt="..." width="65" height="65"/> 
+                    </div>
+                    <div class="col-6">
+                        <h3>{{item.user}}</h3>
+                        <p>{{item.bio}}</p>
+                        <a href="{{item.get_absolute_url}}">
+                            <button class="btn btn-success" type="button">See profile</button>
+                        </a>
+                        
+                                                
+                            {% if item.user not in rel_receiver and item.user not in rel_sender %}
+                                <form action="{% url 'profiles:send-invite' %}" method="POST">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="profile_pk" value="{{item.pk}}">
+                                    <button class="btn btn-outline-primary mt-2" type="submit"><i class="fa-solid fa-user-plus"></i> Add to Friends </button>
+                                </form>
+                            {% endif %}
+
+                            {% if item.user in rel_receiver and request.user not in item.friends.all %}
+                            <button type="submit" class="btn btn-outline-secondary  mt-2" disabled><i class="fa-solid fa-pause"></i> Waiting for approval</button>
+                            {% endif %}
+
+                            {% if request.user in item.friends.all %}
+                                <form action="{% url 'profiles:remove-friend' %}" method="POST">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="profile_pk" value={{item.pk}}>
+                                    <button class="btn btn-outline-danger mt-2" type="submit"><i class="fa-solid fa-user-minus"></i> Remove from Friends </button>
+                                </form>
+                            {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+    {% endfor %}
+
+
+{% endblock %}

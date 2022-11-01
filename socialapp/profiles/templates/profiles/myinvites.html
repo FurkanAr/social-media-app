@@ -1,0 +1,49 @@
+{% extends 'base.html' %} 
+{% block content %}
+
+<h3>Incoming requests</h3>
+<hr>
+    {% if is_empty %}
+        <div class="container">
+            <div class="row">
+                <div class="col-6">
+                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                        No new friend requests..        
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    {% for item in qs %}
+        <div class="p-3 mb-4 bg-light rounded-3">
+            <div class="container-fluid py-5">
+                <div class="row">
+                    <div class="col-2">
+                        <img src="{{ item.avatar.url }}" class="rounded-circle shadow-1-strong" alt="..." width="65" height="65"/> 
+                    </div>
+                    <div class="col-6">
+                        <h3 class="mb-2">{{item.user}}</h3>
+                        <a href="{{item.get_absolute_url}}">
+                        <button class="btn btn-success mt-1" type="button">See profile</button>
+                        </a>
+                        <form action="{% url 'profiles:accept-invite' %}" method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="profile_pk" value="{{item.pk}}">
+                            <button class="btn btn-outline-primary mt-2" type="submit"><i class="fa-sharp fa-solid fa-check"></i> Accept invite </button>
+                        </form>
+                        <form action="{% url 'profiles:reject-invite' %}" method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="profile_pk" value="{{item.pk}}">
+                            <button class="btn btn-outline-danger mt-2" type="submit"><i class="fa-solid fa-xmark"></i> Reject invite</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% endfor %}
+
+
+{% endblock %}

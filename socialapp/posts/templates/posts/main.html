@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% load static %} 
+{%load crispy_forms_tags %}
+{% block content %}
+
+<div class="container">
+    <div class="row">
+      {% if messages %}
+      <ul class="messages">
+          {% for message in messages %}
+          <div class="alert alert-success" role="alert" {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</div>
+          {% endfor %}
+      </ul>
+      {% endif %}
+        <div class="col-md-10">
+            {% for post in posts %}
+            <div class="card mb-4" style="width: 50rem;">
+              <div class="row mt-2 ">
+                <div class="col-6">
+                  <img src="{{ post.author.avatar.url }}" class="rounded-circle shadow-1-strong" alt="..." width="65" height="65"
+                  /> {{post.author}} 
+
+                </div>
+                <div class="col-6" style="text-align: right;">
+                  {% if request.user == post.author.user %}
+                  <a href="{% url 'posts:update-post' post.pk %}"> <i class="fa-solid fa-pen-nib"></i> Update</a>
+                  <a href="{% url 'posts:delete-post' post.pk %}"> <i class="fa-sharp fa-solid fa-eraser"></i> Delete</a>
+                  {% endif %}
+                </div>
+              </div>
+              <hr>
+                <img src="{{ post.image.url }}" class="card-img-top" alt="..." width="150" height="365">
+                <div class="card-body">
+                  <p class="card-text " style="font-weight: bold;">  {{post}}</p>
+                  <p style="font-style: italic;">{{post.created|date:"SHORT_DATE_FORMAT"}}</p>
+
+                  <div class="row">
+                    <div class="col-6">
+                      <i class="fa-solid fa-comment"></i> {{post.getCommentNumber}} Comments
+                    </div>
+                    
+                    <div class="col-6" style="text-align:right;">
+                      <form action="{% url 'posts:like-dislike-post' %}" method="post">   
+                        {% csrf_token %}
+                        <input type="hidden" name="post_id" value="{{post.id}}">
+                        <button  type="submit" class="btn btn-outline-success">
+                          {% if profile not in post.liked.all %}
+                          <i class="fa-regular fa-heart"></i>
+                          {% else %}
+                          <i class="fa-solid fa-heart"></i>
+                          {% endif %}
+                        </button>
+                        {{post.getLikeNumber}} Likes
+    
+                      </form>
+                    </div>
+                  </div>
+                        
+                  <hr>
+
+                </div>
+                {% if post.comment_set.all %}
+                  {% for comment in post.comment_set.all %}
+                  <div class="d-flex flex-start mb-3">
+                    <a class="me-3" href="#">
+                      <img class="rounded-circle shadow-1-strong"
+                        src="{{ comment.user.avatar.url }}" alt="avatar"
+                        width="65" height="65" />
+                    </a>
+                    <div class="flex-grow-1 flex-shrink-1">
+                      <div>
+                        <div class="d-flex justify-content-between align-items-center">
+                          <p class="mb-1">
+                            {{comment.user}} <span class="small">- {{comment.created|timesince}} ago</span>
+                          </p>
+                        </div>
+                        <p class="small mb-0">
+                          {{comment.text}}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {% endfor %}
+                {% endif %}
+
+
+                <form class="mb-2" action="{% url 'posts:comment-post' %}" method="POST">
+                  {% csrf_token %}
+                  <input type="hidden" name="post_id" value="{{post.id}}"> 
+                  <div class="row">
+                    <div class="col-10">
+                      {{ comment_form|crispy }}
+
+                    </div>
+                    <div class="col-2">
+                      <button  type="submit" class="btn btn-success" name="submit_comment_form">
+                        <i class="fa-solid fa-comment-dots"></i> 
+                      </button>
+                    </div>
+                  </div>
+
+              </form>
+              </div>
+            {% endfor %}
+
+        </div>
+        <div class="col-md-2 ml-2">
+
+            <!-- Button trigger modal -->
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal"> <i class="fa-sharp fa-solid fa-plus"></i>
+              Add Post
+              </button>
+                
+                <!-- Modal -->
+                <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel">Add Post      </h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                          <form action="" method="POST" enctype="multipart/form-data">
+                              {% csrf_token %} 
+                              {{ post_form|crispy }}
+                              <div class="mt-2">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                  <button type="submit" class="btn btn-primary" name="submit_post_form">Send Post</button>
+                              </div>     
+              
+                          </form>
+                      </div>     
+              
+                    </div>
+                  </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
